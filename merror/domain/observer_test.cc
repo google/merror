@@ -17,10 +17,10 @@
 
 #include <type_traits>
 
-#include "merror/domain/base.h"
-#include "merror/macros.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "merror/domain/base.h"
+#include "merror/macros.h"
 
 namespace merror {
 namespace {

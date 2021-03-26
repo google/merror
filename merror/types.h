@@ -89,9 +89,8 @@ std::ostream& operator<<(std::ostream& strm, const RelationalExpression& expr);
 //   // Handles only rvalue references to `[const] [volatile] MyError`.
 //   template <class R>
 //   Acceptor Verify(Ref<R&&, MyError> val);
-template <class R,
-          class T = typename std::remove_cv<
-              typename std::remove_reference<R>::type>::type>
+template <class R, class T = typename std::remove_cv<
+                       typename std::remove_reference<R>::type>::type>
 class Ref {
  public:
   static_assert(std::is_reference<R>::value, "");

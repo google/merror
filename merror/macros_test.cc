@@ -459,7 +459,6 @@ TEST(MVerify, RvalueDomain) {
 }
 */
 
-
 TEST(MVerify, BuilderOperators) {
   struct Builder {
     int BuildError() { return error; }

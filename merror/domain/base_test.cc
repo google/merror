@@ -19,10 +19,10 @@
 #include <type_traits>
 #include <utility>
 
-#include "merror/domain/defer.h"
-#include "merror/macros.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "merror/domain/defer.h"
+#include "merror/macros.h"
 
 namespace merror {
 namespace {
@@ -59,8 +59,9 @@ struct FakeContext {
 };
 
 template <class Domain>
-auto GetBuilder(Domain&& domain) -> decltype(
-    std::forward<Domain>(domain).GetErrorBuilder(FakeContext::Instance())) {
+auto GetBuilder(Domain&& domain)
+    -> decltype(std::forward<Domain>(domain).GetErrorBuilder(
+        FakeContext::Instance())) {
   return std::forward<Domain>(domain).GetErrorBuilder(FakeContext::Instance());
 }
 

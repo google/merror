@@ -95,15 +95,15 @@ struct Policy : Base {
 template <class Base>
 struct Builder : Observer<Base> {
   template <class Out>
-  auto Tee(Out&& out) && -> decltype(
-      AddAnnotation<TeeAnnotation>(std::move(*this), std::forward<Out>(out))) {
+  auto Tee(Out&& out) && -> decltype(AddAnnotation<TeeAnnotation>(
+      std::move(*this), std::forward<Out>(out))) {
     return AddAnnotation<TeeAnnotation>(std::move(*this),
                                         std::forward<Out>(out));
   }
 
   template <class X = void>
-  auto NoTee() && -> decltype(
-      RemoveAnnotations<TeeAnnotation>(std::move(Defer<X>(*this)))) {
+  auto NoTee() && -> decltype(RemoveAnnotations<TeeAnnotation>(
+      std::move(Defer<X>(*this)))) {
     return RemoveAnnotations<TeeAnnotation>(std::move(*this));
   }
 

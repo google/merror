@@ -18,10 +18,10 @@
 
 #include "merror/domain/default.h"
 
-#include "merror/macros.h"
+#include "absl/status/statusor.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "absl/status/statusor.h"
+#include "merror/macros.h"
 
 namespace merror {
 namespace {
@@ -43,9 +43,11 @@ TEST(Default, Works) {
   auto res = Mod(8, 3);
   EXPECT_THAT(*res, 2);
   res = Mod(8, 0);
-  EXPECT_THAT(res.status().code(),absl::StatusCode::kInvalidArgument);
-  EXPECT_THAT(std::string(res.status().message()),
-               ContainsRegex(R"(.*default_test.cc:[0-9]+: MVERIFY\(b != 0\).*Cannot divide by zero.*Same as: MVERIFY\(0 != 0\))"));
+  EXPECT_THAT(res.status().code(), absl::StatusCode::kInvalidArgument);
+  EXPECT_THAT(
+      std::string(res.status().message()),
+      ContainsRegex(
+          R"(.*default_test.cc:[0-9]+: MVERIFY\(b != 0\).*Cannot divide by zero.*Same as: MVERIFY\(0 != 0\))"));
 }
 
 }  // namespace
