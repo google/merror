@@ -28,7 +28,7 @@ namespace merror {
 namespace internal_verify_via_try {
 
 template <class Base>
-class Policy;
+struct Policy;
 
 namespace impl {
 

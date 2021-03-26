@@ -31,10 +31,10 @@ namespace merror {
 namespace internal_method_hooks {
 
 template <class Base>
-class Policy;
+struct Policy;
 
 template <class Base>
-class Builder;
+struct Builder;
 
 namespace impl {
 

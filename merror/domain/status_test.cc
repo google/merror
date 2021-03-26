@@ -35,6 +35,24 @@ namespace {
 
 using ::absl::StatusOr;
 using ::testing::MatchesRegex;
+using ::testing::ContainsRegex;
+using ::testing::Eq;
+
+MATCHER_P(StatusIs, status, "") {
+  if constexpr (std::is_same_v<std::decay_t<arg_type>, absl::Status>) {
+    return arg.code() == status;
+  } else {
+    return arg.status().code() == status;
+  }
+}
+
+MATCHER_P2(StatusIs, status, matcher, "") {
+  if constexpr (std::is_same_v<std::decay_t<arg_type>, absl::Status>) {
+    return arg.code() == status && ExplainMatchResult(matcher, std::string(arg.message()), result_listener);
+  } else {
+    return arg.status().code() == status && ExplainMatchResult(matcher, std::string(arg.status().message()), result_listener);;
+  }
+}
 
 template <bool Printable>
 struct MyError {
@@ -122,7 +140,7 @@ TEST(MakeStatus, AcceptStatus) {
   EXPECT_FALSE(passed);
 }
 
-/*
+
 TEST(MakeStatus, AcceptStatusOr) {
   bool passed;
   auto F = [&](StatusOr<int> obj) -> absl::Status {
@@ -132,7 +150,7 @@ TEST(MakeStatus, AcceptStatusOr) {
     passed = true;
     return absl::OkStatus();
   };
-  EXPECT_THAT(F(42), IsOk());
+  EXPECT_TRUE(F(42).ok());
   EXPECT_TRUE(passed);
   EXPECT_THAT(F(absl::UnknownError("")), StatusIs(absl::StatusCode::kUnknown));
   EXPECT_FALSE(passed);
@@ -144,7 +162,8 @@ TEST(MakeStatusOr, AcceptStatusOr) {
     strm << MTRY(obj);
     return {strm.str()};
   };
-  EXPECT_THAT(F(42), IsOkAndHolds("42"));
+  EXPECT_TRUE(F(42).ok());
+  EXPECT_EQ(*F(42), "42");
   EXPECT_THAT(F(absl::UnknownError("")), StatusIs(absl::StatusCode::kUnknown));
 }
 
@@ -154,7 +173,7 @@ TEST(MakeStatus, DescriptionFromStatus) {
       MVERIFY(absl::Status(absl::StatusCode::kInternal, " \n hello \n "));
       return absl::OkStatus();
     };
-    EXPECT_THAT(F(), StatusIs(absl::StatusCode::kInternal, " \n hello \n "));
+    EXPECT_THAT(F(), StatusIs(absl::StatusCode::kInternal, Eq(" \n hello \n ")));
   }
   {
     auto F = []() -> absl::Status {
@@ -164,10 +183,10 @@ TEST(MakeStatus, DescriptionFromStatus) {
       return absl::OkStatus();
     };
     EXPECT_THAT(F(), StatusIs(absl::StatusCode::kInternal,
-                              "c1 \n"
+                              Eq("c1 \n"
                               " c2\n"
                               "p1 \n"
-                              " p2"));
+                              " p2")));
   }
   {
     auto F = []() -> absl::Status {
@@ -177,10 +196,10 @@ TEST(MakeStatus, DescriptionFromStatus) {
       return absl::OkStatus();
     };
     EXPECT_THAT(F(), StatusIs(absl::StatusCode::kInternal,
-                              "c1 \n"
+                              Eq("c1 \n"
                               " c2\n"
                               "b1 \n"
-                              " b2"));
+                              " b2")));
   }
   {
     auto F = []() -> absl::Status {
@@ -190,12 +209,12 @@ TEST(MakeStatus, DescriptionFromStatus) {
       return absl::OkStatus();
     };
     EXPECT_THAT(F(), StatusIs(absl::StatusCode::kInternal,
-                              "c1 \n"
+                              Eq("c1 \n"
                               " c2\n"
                               "p1 \n"
                               " p2\n"
                               "b1 \n"
-                              " b2"));
+                              " b2")));
   }
 }
 
@@ -206,7 +225,7 @@ TEST(MakeStatus, DescriptionFromStatusOr) {
         absl::Status(absl::StatusCode::kInternal, " \n hello \n ")));
     return absl::OkStatus();
   };
-  EXPECT_THAT(F(), StatusIs(absl::StatusCode::kInternal, "hello\nbye"));
+  EXPECT_THAT(F(), StatusIs(absl::StatusCode::kInternal, Eq("hello\nbye")));
 }
 
 TEST(MakeStatus, DescriptionFromNothing) {
@@ -216,7 +235,7 @@ TEST(MakeStatus, DescriptionFromNothing) {
     // merror::Void is empty, so the culprit doesn't get printed.
     EXPECT_THAT(F(),
                 StatusIs(UNKNOWN,
-                         MatchesRegex(R"(.*status_test\.cc:\d+: MERROR\(\))")));
+                         MatchesRegex(std::string(R"(.*status_test\.cc:.*: MERROR\(\))"))));
   }
   {
     auto F = []() -> absl::Status {
@@ -224,9 +243,9 @@ TEST(MakeStatus, DescriptionFromNothing) {
       return MERROR().ErrorCode(UNKNOWN) << " \n b1 \n b2 \n ";
     };
     EXPECT_THAT(F(), StatusIs(UNKNOWN, MatchesRegex(
-                                           R"(.*status_test\.cc:\d+: p1 \n)"
-                                           R"( p2\n)"
-                                           R"(b1 \n)"
+                                           std::string(R"(.*status_test\.cc:.+: p1 .)") +
+                                           R"( p2.)"
+                                           R"(b1 .)"
                                            R"( b2)")));
   }
   {
@@ -242,7 +261,7 @@ TEST(MakeStatus, DescriptionFromNothing) {
         StatusIs(
             absl::StatusCode::kAborted,
             MatchesRegex(
-                R"(.*status_test\.cc:\d+: )"
+                std::string(R"(.*status_test\.cc:.+: )") +
                 R"(MVERIFY\(MyError<false>\{static_cast<int>\(absl::StatusCode::kInvalidArgument\)\}\))")));
   }
   {
@@ -256,7 +275,7 @@ TEST(MakeStatus, DescriptionFromNothing) {
         StatusIs(
             absl::StatusCode::kInternal,
             MatchesRegex(
-                R"(.*status_test\.cc:\d+: )"
+               std::string( R"(.*status_test\.cc:.+: )") +
                 R"(MVERIFY\(MyError<true>\{static_cast<int>\(absl::StatusCode::kInternal\)\}\))")));
   }
   {
@@ -267,7 +286,7 @@ TEST(MakeStatus, DescriptionFromNothing) {
     EXPECT_THAT(
         F(), StatusIs(UNKNOWN,
                       MatchesRegex(
-                          R"(.*status_test\.cc:\d+: MVERIFY\(2 \+ 2 == 5\)\n)"
+                          std::string(R"(.*status_test\.cc:.+: MVERIFY\(2 \+ 2 == 5\).)") +
                           R"(Same as: MVERIFY\(4 == 5\))")));
   }
 }
@@ -394,7 +413,6 @@ TEST(MakeStatus, ErrorCodeFromNothing) {
     EXPECT_THAT(F(), StatusIs(INTERNAL));
   }
 }
-*/
 
 }  // namespace
 }  // namespace merror
