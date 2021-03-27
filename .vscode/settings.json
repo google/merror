@@ -1,0 +1,9 @@
+{
+    "clang.cxxflags": [
+        "-std=c++17",
+        "-I${workspaceRoot}",
+        "-I${workspaceRoot}/bazel-merror/external/absl",
+        "-I${workspaceRoot}/bazel-merror/external/googletest/googlemock/include",
+        "-I${workspaceRoot}/bazel-merror/external/googletest/googletest/include"
+    ]
+}

@@ -4,3 +4,4 @@
 /bazel-out
 /bazel-testlogs
 /.vscode
+.vscode/settings.json
