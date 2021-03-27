@@ -296,15 +296,15 @@ std::string FormatMessage(
     Macro macro, const char* macro_str, const char* args_str,
     RelationalExpression* rel_expr,
     const std::function<void(std::ostream*)>& print_culprit,
-    std::string_view policy_description,
-    std::string_view builder_description);
+    std::string_view policy_description, std::string_view builder_description);
 
 template <class Base>
 struct Builder : Observer<Base> {
   template <class Filter>
-  auto DefaultLogFilter(Filter&& filter) && -> decltype(
-      AddAnnotation<DefaultFilterAnnotation>(std::move(*this),
-                                             std::forward<Filter>(filter))) {
+  auto
+  DefaultLogFilter(Filter&& filter) && -> decltype(AddAnnotation<
+                                                   DefaultFilterAnnotation>(
+      std::move(*this), std::forward<Filter>(filter))) {
     return AddAnnotation<DefaultFilterAnnotation>(std::move(*this),
                                                   std::forward<Filter>(filter));
   }

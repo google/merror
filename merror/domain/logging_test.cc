@@ -30,6 +30,8 @@
 #include <utility>
 #include <vector>
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "merror/domain/base.h"
 #include "merror/domain/bool.h"
 #include "merror/domain/description.h"
@@ -39,8 +41,6 @@
 #include "merror/domain/return.h"
 #include "merror/domain/status.h"
 #include "merror/macros.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
 
 namespace merror {
 namespace {

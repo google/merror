@@ -6,8 +6,6 @@ git_repository(
     tag = "release-1.10.0",
 )
 
-20200923.3
-
 git_repository(
     name = "absl",
     remote = "https://github.com/abseil/abseil-cpp.git",

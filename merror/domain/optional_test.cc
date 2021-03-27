@@ -17,10 +17,10 @@
 
 #include <string>
 
-#include "merror/domain/return.h"
-#include "merror/macros.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "merror/domain/return.h"
+#include "merror/macros.h"
 
 namespace merror {
 namespace {
@@ -29,9 +29,8 @@ using std::nullopt;
 using std::nullopt_t;
 using std::optional;
 
-constexpr auto MErrorDomain =
-    EmptyDomain()
-        .With(MethodHooks(), Return(), AcceptOptional(), MakeOptional());
+constexpr auto MErrorDomain = EmptyDomain().With(
+    MethodHooks(), Return(), AcceptOptional(), MakeOptional());
 
 TEST(Optional, ReturnOptional) {
   bool passed;

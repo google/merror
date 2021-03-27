@@ -32,9 +32,9 @@ namespace internal {
 namespace tls_map {
 namespace {
 
-using tls_map::testing::Size;
 using tls_map::testing::Capacity;
 using tls_map::testing::Clear;
+using tls_map::testing::Size;
 
 class X {
  public:

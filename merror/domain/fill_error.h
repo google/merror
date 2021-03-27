@@ -41,8 +41,8 @@ struct AnyError {
 
 template <class Builder, class Culprit, class F>
 auto Invoke(const Builder& builder, const Culprit& culprit, F&& f, int)
-    -> decltype(
-        std::forward<F>(f)(std::declval<AnyError<Builder, Culprit>>())) {
+    -> decltype(std::forward<F>(f)(
+        std::declval<AnyError<Builder, Culprit>>())) {
   return std::forward<F>(f)(AnyError<Builder, Culprit>{builder, culprit});
 }
 

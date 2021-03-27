@@ -18,9 +18,9 @@
 #include <type_traits>
 #include <utility>
 
+#include "gtest/gtest.h"
 #include "merror/domain/base.h"
 #include "merror/macros.h"
-#include "gtest/gtest.h"
 
 namespace merror {
 namespace {

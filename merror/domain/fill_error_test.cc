@@ -17,12 +17,12 @@
 
 #include <string>
 
+#include "gtest/gtest.h"
 #include "merror/domain/base.h"
 #include "merror/domain/bool.h"
 #include "merror/domain/method_hooks.h"
 #include "merror/domain/return.h"
 #include "merror/macros.h"
-#include "gtest/gtest.h"
 
 namespace merror {
 namespace {
@@ -40,7 +40,9 @@ struct SideError : Base {
 template <class Base>
 struct GenerateError : Base {
   template <class T>
-  int MakeError(ResultType<int>, T&&) const { return 42; }
+  int MakeError(ResultType<int>, T&&) const {
+    return 42;
+  }
 
   template <class T>
   bool MakeError(ResultType<bool>, T&&) const {
