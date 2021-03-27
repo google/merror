@@ -165,7 +165,7 @@ TEST(MakeStatusOr, AcceptStatusOr) {
     strm << MTRY(obj);
     return {strm.str()};
   };
-  EXPECT_THAT(F(42), IsOk());
+  ASSERT_THAT(F(42), IsOk());
   EXPECT_THAT(*F(42), "42");
   EXPECT_THAT(F(absl::UnknownError("")), StatusIs(absl::StatusCode::kUnknown));
 }
