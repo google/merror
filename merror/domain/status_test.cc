@@ -33,6 +33,28 @@
 namespace merror {
 namespace {
 
+MATCHER(IsOk, "") { return arg.ok(); }
+
+MATCHER_P(StatusIs, status, "") {
+  if constexpr (std::is_same_v<std::decay_t<arg_type>, absl::Status>) {
+    return arg.code() == status;
+  } else {
+    return arg.status().code() == status;
+  }
+}
+
+MATCHER_P2(StatusIs, status, matcher, "") {
+  if constexpr (std::is_same_v<std::decay_t<arg_type>, absl::Status>) {
+    return arg.code() == status &&
+           ExplainMatchResult(matcher, std::string(arg.message()),
+                              result_listener);
+  } else {
+    return arg.status().code() == status &&
+           ExplainMatchResult(matcher, std::string(arg.status().message()),
+                              result_listener);
+  }
+}
+
 using ::absl::StatusOr;
 using ::testing::MatchesRegex;
 
@@ -122,7 +144,6 @@ TEST(MakeStatus, AcceptStatus) {
   EXPECT_FALSE(passed);
 }
 
-/*
 TEST(MakeStatus, AcceptStatusOr) {
   bool passed;
   auto F = [&](StatusOr<int> obj) -> absl::Status {
@@ -144,7 +165,8 @@ TEST(MakeStatusOr, AcceptStatusOr) {
     strm << MTRY(obj);
     return {strm.str()};
   };
-  EXPECT_THAT(F(42), IsOkAndHolds("42"));
+  ASSERT_THAT(F(42), IsOk());
+  EXPECT_THAT(*F(42), "42");
   EXPECT_THAT(F(absl::UnknownError("")), StatusIs(absl::StatusCode::kUnknown));
 }
 
@@ -214,20 +236,20 @@ TEST(MakeStatus, DescriptionFromNothing) {
   {
     auto F = []() -> absl::Status { return MERROR().ErrorCode(UNKNOWN); };
     // merror::Void is empty, so the culprit doesn't get printed.
-    EXPECT_THAT(F(),
-                StatusIs(UNKNOWN,
-                         MatchesRegex(R"(.*status_test\.cc:\d+: MERROR\(\))")));
+    EXPECT_THAT(
+        F(), StatusIs(UNKNOWN,
+                      MatchesRegex(R"(.*status_test\.cc:[0-9]+: MERROR\(\))")));
   }
   {
     auto F = []() -> absl::Status {
       static constexpr auto MErrorDomain = MyDomain << " \n p1 \n p2 \n ";
       return MERROR().ErrorCode(UNKNOWN) << " \n b1 \n b2 \n ";
     };
-    EXPECT_THAT(F(), StatusIs(UNKNOWN, MatchesRegex(
-                                           R"(.*status_test\.cc:\d+: p1 \n)"
-                                           R"( p2\n)"
-                                           R"(b1 \n)"
-                                           R"( b2)")));
+    EXPECT_THAT(
+        F(), StatusIs(UNKNOWN, MatchesRegex(R"(.*status_test\.cc:[0-9]+: p1 .)"
+                                            R"( p2.)"
+                                            R"(b1 .)"
+                                            R"( b2)")));
   }
   {
     auto F = []() -> absl::Status {
@@ -242,7 +264,7 @@ TEST(MakeStatus, DescriptionFromNothing) {
         StatusIs(
             absl::StatusCode::kAborted,
             MatchesRegex(
-                R"(.*status_test\.cc:\d+: )"
+                R"(.*status_test\.cc:[0-9]+: )"
                 R"(MVERIFY\(MyError<false>\{static_cast<int>\(absl::StatusCode::kInvalidArgument\)\}\))")));
   }
   {
@@ -256,7 +278,7 @@ TEST(MakeStatus, DescriptionFromNothing) {
         StatusIs(
             absl::StatusCode::kInternal,
             MatchesRegex(
-                R"(.*status_test\.cc:\d+: )"
+                R"(.*status_test\.cc:[0-9]+: )"
                 R"(MVERIFY\(MyError<true>\{static_cast<int>\(absl::StatusCode::kInternal\)\}\))")));
   }
   {
@@ -267,7 +289,7 @@ TEST(MakeStatus, DescriptionFromNothing) {
     EXPECT_THAT(
         F(), StatusIs(UNKNOWN,
                       MatchesRegex(
-                          R"(.*status_test\.cc:\d+: MVERIFY\(2 \+ 2 == 5\)\n)"
+                          R"(.*status_test\.cc:[0-9]+: MVERIFY\(2 \+ 2 == 5\).)"
                           R"(Same as: MVERIFY\(4 == 5\))")));
   }
 }
@@ -346,7 +368,6 @@ TEST(MakeStatus, ErrorCodeFromStatusOr) {
   }
 }
 
-
 TEST(MakeStatus, ErrorCodeFromNothing) {
   static const auto UNKNOWN = absl::StatusCode::kUnknown;
   static const auto INTERNAL = absl::StatusCode::kInternal;
@@ -394,7 +415,6 @@ TEST(MakeStatus, ErrorCodeFromNothing) {
     EXPECT_THAT(F(), StatusIs(INTERNAL));
   }
 }
-*/
 
 }  // namespace
 }  // namespace merror
