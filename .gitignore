@@ -3,3 +3,4 @@
 /bazel-merror
 /bazel-out
 /bazel-testlogs
+/.vscode
