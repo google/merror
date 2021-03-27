@@ -37,3 +37,10 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "stringstream",
+    hdrs = ["stringstream.h"],
+    deps = [
+    ],
+)
