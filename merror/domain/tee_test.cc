@@ -18,13 +18,13 @@
 #include <type_traits>
 #include <utility>
 
+#include "gtest/gtest.h"
 #include "merror/domain/base.h"
 #include "merror/domain/bool.h"
 #include "merror/domain/fill_error.h"
 #include "merror/domain/method_hooks.h"
 #include "merror/domain/return.h"
 #include "merror/macros.h"
-#include "gtest/gtest.h"
 
 namespace merror {
 namespace {
@@ -122,10 +122,12 @@ TEST(Tee, PolicyNoTee) {
   auto F = [&](bool val) {
     passed = false;
     side_error = true;
-    const auto MErrorDomain = MyErrorDomain.Tee([&](bool val) {
-      EXPECT_FALSE(val);
-      side_error = val;
-    }).NoTee();
+    const auto MErrorDomain = MyErrorDomain
+                                  .Tee([&](bool val) {
+                                    EXPECT_FALSE(val);
+                                    side_error = val;
+                                  })
+                                  .NoTee();
     MVERIFY(val);
     passed = true;
   };
@@ -136,7 +138,6 @@ TEST(Tee, PolicyNoTee) {
   EXPECT_FALSE(passed);
   EXPECT_TRUE(side_error);
 }
-
 
 TEST(Tee, NonVoidReturnTypeNoTee) {
   bool passed;

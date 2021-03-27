@@ -59,8 +59,8 @@ struct Acceptor {
 
   bool IsError() { return acceptor.IsError(); }
 
-  auto GetCulprit() && -> decltype(
-      std::forward<BaseAcceptor>(acceptor).GetCulprit()) {
+  auto GetCulprit() && -> decltype(std::forward<BaseAcceptor>(acceptor)
+                                       .GetCulprit()) {
     return std::forward<BaseAcceptor>(acceptor).GetCulprit();
   }
 

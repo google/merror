@@ -17,8 +17,8 @@
 
 #include <utility>
 
-#include "merror/macros.h"
 #include "gtest/gtest.h"
+#include "merror/macros.h"
 
 namespace merror {
 namespace {

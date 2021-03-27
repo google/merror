@@ -35,7 +35,7 @@ cc_test(
         ":expand_expr",
         "//merror:types",
         "@googletest//:gtest_main",
-   ],
+    ],
 )
 
 cc_library(

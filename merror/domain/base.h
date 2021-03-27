@@ -351,9 +351,7 @@ class BasePolicy {
   constexpr const PolicyType& derived() const {
     return static_cast<const PolicyType&>(*this);
   }
-  constexpr PolicyType& derived() {
-    return static_cast<PolicyType&>(*this);
-  }
+  constexpr PolicyType& derived() { return static_cast<PolicyType&>(*this); }
 
   // Extends the policy with extra functionality.
   //
@@ -382,13 +380,13 @@ class BasePolicy {
   template <template <class> class... Ps, template <class> class... Bs,
             class... As, class X = void>
   constexpr auto With(const ConcretePolicy<Ps, Bs, As>&... extras) const
-      -> decltype(
-          MakePolicy<MergeLayers<PolicyTraits<ThePolicy>::template PolicyType,
-                                 Ps...>::template type,
-                     MergeLayers<PolicyTraits<ThePolicy>::template BuilderType,
-                                 Bs...>::template type>(
-              type_map::Merge(Defer<X>(this)->derived().annotations_,
-                              extras.annotations_...))) {
+      -> decltype(MakePolicy<
+                  MergeLayers<PolicyTraits<ThePolicy>::template PolicyType,
+                              Ps...>::template type,
+                  MergeLayers<PolicyTraits<ThePolicy>::template BuilderType,
+                              Bs...>::template type>(
+          type_map::Merge(Defer<X>(this)->derived().annotations_,
+                          extras.annotations_...))) {
     return MakePolicy<MergeLayers<PolicyTraits<ThePolicy>::template PolicyType,
                                   Ps...>::template type,
                       MergeLayers<PolicyTraits<ThePolicy>::template BuilderType,
@@ -450,7 +448,7 @@ class __attribute__((warn_unused)) ConcretePolicy
   ConcretePolicy& operator()() & { return *this; }
   constexpr const ConcretePolicy& operator()() const& { return *this; }
   ConcretePolicy&& operator()() && { return std::move(*this); }
-  constexpr const ConcretePolicy&& operator()() const && {
+  constexpr const ConcretePolicy&& operator()() const&& {
     return std::move(*this);
   }
 
@@ -700,16 +698,16 @@ auto GetAnnotations(BaseBuilder<B>&& b)
 
 }  // namespace internal_domain_base
 
-using internal_domain_base::Policy;
 using internal_domain_base::Builder;
 using internal_domain_base::Domain;
+using internal_domain_base::Policy;
 
-using internal_domain_base::HasAnnotation;
 using internal_domain_base::AddAnnotation;
-using internal_domain_base::RemoveAnnotations;
 using internal_domain_base::GetAnnotation;
 using internal_domain_base::GetAnnotationOr;
 using internal_domain_base::GetAnnotations;
+using internal_domain_base::HasAnnotation;
+using internal_domain_base::RemoveAnnotations;
 
 // The most basic error domain. It can't be used with the merror macros out of
 // the box because it deliberately lacks several required methods. It should be

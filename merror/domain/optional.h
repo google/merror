@@ -68,13 +68,13 @@ struct MakeOptional : Hook<Base> {
 
   template <class T, class Culprit>
   std::optional<T> MakeMError(ResultType<std::optional<T>>,
-                               const Culprit& culprit) const {
+                              const Culprit& culprit) const {
     return std::nullopt;
   }
 
   template <class Culprit>
   std::nullopt_t MakeMError(ResultType<std::nullopt_t>,
-                             const Culprit& culprit) const {
+                            const Culprit& culprit) const {
     return std::nullopt;
   }
 };

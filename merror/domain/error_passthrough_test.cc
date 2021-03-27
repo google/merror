@@ -17,11 +17,11 @@
 
 #include <utility>
 
+#include "gtest/gtest.h"
 #include "merror/domain/base.h"
 #include "merror/domain/defer.h"
 #include "merror/domain/return.h"
 #include "merror/macros.h"
-#include "gtest/gtest.h"
 
 namespace merror {
 namespace {
@@ -74,8 +74,8 @@ struct ProduceError : Base {
 template <class Base>
 struct SideError : Base {
   template <class Error>
-  auto Fill(Error&& error) && -> decltype(
-      std::move(Defer<Error>(this)->derived())) {
+  auto Fill(
+      Error&& error) && -> decltype(std::move(Defer<Error>(this)->derived())) {
     this->derived().FillError(this->context().culprit,
                               std::forward<Error>(error));
     return std::move(this->derived());

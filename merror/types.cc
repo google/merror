@@ -23,12 +23,18 @@ std::ostream& operator<<(std::ostream& strm, Void) { return strm << "void"; }
 
 std::ostream& operator<<(std::ostream& strm, RelationalOperator op) {
   switch (op) {
-    case RelationalOperator::kEq: return strm << "==";
-    case RelationalOperator::kNe: return strm << "!=";
-    case RelationalOperator::kLt: return strm << "<";
-    case RelationalOperator::kGt: return strm << ">";
-    case RelationalOperator::kLe: return strm << "<=";
-    case RelationalOperator::kGe: return strm << ">=";
+    case RelationalOperator::kEq:
+      return strm << "==";
+    case RelationalOperator::kNe:
+      return strm << "!=";
+    case RelationalOperator::kLt:
+      return strm << "<";
+    case RelationalOperator::kGt:
+      return strm << ">";
+    case RelationalOperator::kLe:
+      return strm << "<=";
+    case RelationalOperator::kGe:
+      return strm << ">=";
   }
   return strm << R"(¯\_(ツ)_/¯)";
 }

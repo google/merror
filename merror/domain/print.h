@@ -54,12 +54,10 @@ struct Printer : Base {
 };
 
 template <class Base>
-struct Policy : Printer<Base> {
-};
+struct Policy : Printer<Base> {};
 
 template <class Base>
-struct Builder : Printer<Base> {
-};
+struct Builder : Printer<Base> {};
 
 template <
     class PolicyOrBuilder, class T,

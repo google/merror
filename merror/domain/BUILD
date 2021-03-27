@@ -34,8 +34,8 @@ cc_test(
     deps = [
         ":default",
         "//merror:macros",
-        "@googletest//:gtest_main",
         "@absl//absl/status:statusor",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -217,9 +217,9 @@ cc_test(
         ":return",
         ":status",
         "//merror:macros",
-        "@googletest//:gtest_main",
         "@absl//absl/status",
         "@absl//absl/status:statusor",
+        "@googletest//:gtest_main",
     ],
 )
 

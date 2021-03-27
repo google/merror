@@ -17,10 +17,10 @@
 
 #include <utility>
 
+#include "gtest/gtest.h"
 #include "merror/domain/base.h"
 #include "merror/domain/defer.h"
 #include "merror/macros.h"
-#include "gtest/gtest.h"
 
 namespace merror {
 namespace {
@@ -271,8 +271,8 @@ TEST(BuilderDescription, Something) {
 TEST(BuilderDescription, Manipulators) {
   auto F = [] {
     static constexpr auto& MErrorDomain = MyDomain;
-    return MERROR().ExpectBuilderDescription("10\n") << std::hex << 16
-                                                     << std::endl;
+    return MERROR().ExpectBuilderDescription("10\n")
+           << std::hex << 16 << std::endl;
   };
   F();
 }

@@ -137,8 +137,8 @@ struct AnyError {
 
 template <class Builder, class Culprit, class F>
 auto Invoke(const Builder& builder, const Culprit& culprit, F&& f, int)
-    -> decltype(
-        std::forward<F>(f)(std::declval<AnyError<Builder, Culprit>>())) {
+    -> decltype(std::forward<F>(f)(
+        std::declval<AnyError<Builder, Culprit>>())) {
   return std::forward<F>(f)(AnyError<Builder, Culprit>{builder, culprit});
 }
 
@@ -361,8 +361,8 @@ struct Builder : Observer<Base> {
   // Instructs the error domain to return a value of the specified type on
   // error. The value is constructed by calling `MakeError()`.
   template <class R = void>
-  auto Return() && -> decltype(
-      AddAnnotation<ReturnAnnotation>(std::move(*this), ReturnType<R>())) {
+  auto Return() && -> decltype(AddAnnotation<ReturnAnnotation>(
+      std::move(*this), ReturnType<R>())) {
     return AddAnnotation<ReturnAnnotation>(std::move(*this), ReturnType<R>());
   }
 

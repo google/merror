@@ -58,15 +58,15 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/ascii.h"
 #include "merror/domain/defer.h"
 #include "merror/domain/description.h"
 #include "merror/domain/internal/indenting_stream.h"
 #include "merror/domain/method_hooks.h"
 #include "merror/domain/print.h"
 #include "merror/domain/return.h"
-#include "absl/status/status.h"
-#include "absl/status/statusor.h"
-#include "absl/strings/ascii.h"
 
 namespace merror {
 
@@ -176,8 +176,7 @@ template <class StatusOr>
 struct StatusOrAcceptor {
   StatusOr&& status_or;
   bool IsError() const { return !status_or.ok(); }
-  auto GetValue() && -> decltype(
-      *std::forward<StatusOr>(status_or)) {
+  auto GetValue() && -> decltype(*std::forward<StatusOr>(status_or)) {
     return *std::forward<StatusOr>(status_or);
   }
   const absl::Status& GetCulprit() && { return status_or.status(); }

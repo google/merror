@@ -21,9 +21,9 @@
 #include <type_traits>
 #include <utility>
 
-#include "merror/types.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "merror/types.h"
 
 namespace merror {
 namespace {
@@ -238,16 +238,15 @@ TEST(ExpandExpr, ShortCircuitingOpsLifetime) {
   // left operand is evaluated.
   class Weird {
    public:
-    Weird(bool* dead) : dead_(dead) { }
+    Weird(bool* dead) : dead_(dead) {}
     Weird(const Weird&) { ADD_FAILURE(); }
     ~Weird() {
       EXPECT_FALSE(*dead_);
       *dead_ = true;
     }
-    Weird operator==(bool* dead) const {
-      return Weird(dead);
-    }
+    Weird operator==(bool* dead) const { return Weird(dead); }
     explicit operator bool() const { return true; }
+
    private:
     bool* dead_;
   };
@@ -316,7 +315,7 @@ class IntExpr {
 
   explicit IntExpr(std::function<int()> compute)
       : compute_(std::move(compute)) {
-      assert(compute_);
+    assert(compute_);
   }
 
   int Get() const {

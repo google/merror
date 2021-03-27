@@ -19,16 +19,16 @@
 #include <sstream>
 #include <string>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "merror/domain/bool.h"
 #include "merror/domain/description.h"
 #include "merror/domain/method_hooks.h"
 #include "merror/domain/print_operands.h"
 #include "merror/domain/return.h"
 #include "merror/macros.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "absl/status/status.h"
-#include "absl/status/statusor.h"
 
 namespace merror {
 namespace {

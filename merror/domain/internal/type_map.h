@@ -313,8 +313,9 @@ struct GetOrImpl {
 // If Has<Key>(maps...), returns Get<Key>(maps...). Otherwise returns the
 // default.
 template <class Key, class... Rest>
-constexpr auto GetOr(Rest&&... rest) -> decltype(
-    internal_type_map::GetOrImpl<Key>()(std::forward<Rest>(rest)...)) {
+constexpr auto GetOr(Rest&&... rest)
+    -> decltype(internal_type_map::GetOrImpl<Key>()(
+        std::forward<Rest>(rest)...)) {
   return internal_type_map::GetOrImpl<Key>()(std::forward<Rest>(rest)...);
 }
 

@@ -19,10 +19,10 @@
 #include <memory>
 #include <type_traits>
 
-#include "merror/domain/return.h"
-#include "merror/macros.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "merror/domain/return.h"
+#include "merror/macros.h"
 
 namespace merror {
 namespace {
@@ -30,8 +30,8 @@ namespace {
 using ::testing::IsNull;
 using ::testing::Pointee;
 
-constexpr auto MErrorDomain = EmptyDomain().With(
-    MethodHooks(), Return(), AcceptPointer(), MakePointer());
+constexpr auto MErrorDomain =
+    EmptyDomain().With(MethodHooks(), Return(), AcceptPointer(), MakePointer());
 
 template <template <class...> class P>
 void TestTry() {
