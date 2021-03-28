@@ -173,6 +173,7 @@ cc_library(
     deps = [
         ":base",
         ":defer",
+        "//merror/domain/internal:stringstream",
     ],
 )
 
@@ -320,6 +321,7 @@ cc_library(
     deps = [
         ":base",
         ":print",
+        "//merror/domain/internal:stringstream",
     ],
 )
 

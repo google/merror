@@ -45,6 +45,7 @@
 
 #include "merror/domain/base.h"
 #include "merror/domain/defer.h"
+#include "merror/domain/internal/stringstream.h"
 
 namespace merror {
 
@@ -159,34 +160,6 @@ struct NewLine {
   }
 };
 
-// The same as `std::ostringstream` but with `str()` returning a reference to
-// `::string` instead of a copy of `std::string`.
-//
-// TODO(romanp): switch to the common implementation when it gets submitted:
-// http://g/c-library-team/1vc8wZbEd8A.
-class StringStream : private std::basic_streambuf<char>, public std::ostream {
- public:
-  StringStream() : std::ostream(this) {}
-  std::string& str() { return str_; }
-  const std::string& str() const { return str_; }
-
- private:
-  using Buf = std::basic_streambuf<char>;
-
-  Buf::int_type overflow(int c = Buf::traits_type::eof()) override {
-    if (!Buf::traits_type::eq_int_type(c, Buf::traits_type::eof()))
-      str_.push_back(c);
-    return 1;
-  }
-
-  std::streamsize xsputn(const char* s, std::streamsize n) override {
-    str_.append(s, n);
-    return n;
-  }
-
-  std::string str_;
-};
-
 template <size_t I>
 struct Print {
   template <class Tuple>
@@ -206,12 +179,13 @@ struct Print<0> {
 // `StreamableAnnotation`.
 template <class Policy>
 std::string MakePolicyDescription(const Policy& policy) {
-  StringStream strm;
+  std::string buffer;
+  internal::StringStream strm(&buffer);
   // It's a tuple of references to everything that has been streamed into the
   // policy. The elements are in the reverse order.
   auto values = GetAnnotations<StreamableAnnotation>(policy);
   Print<std::tuple_size<decltype(values)>::value>()(values, &strm);
-  return std::move(strm.str());
+  return buffer;
 }
 
 // This policy extension allows objects to be streamed into merror policies.
@@ -390,12 +364,16 @@ struct Builder : Base {};
 
 class BuilderStream {
  public:
-  explicit operator std::string_view() const { return strm_->str(); }
-  std::ostream& strm() { return *strm_; }
+  explicit operator std::string_view() const { return strm_->buffer; }
+  std::ostream& strm() { return strm_->stream; }
 
  private:
   // StringStream isn't movable, so we store it on the heap.
-  std::unique_ptr<StringStream> strm_{new StringStream};
+  struct Stream {
+    std::string buffer;
+    internal::StringStream stream{&buffer};
+  };
+  std::unique_ptr<Stream> strm_{new Stream};
 };
 
 template <class Base, class T,
