@@ -44,3 +44,11 @@ cc_library(
     deps = [
     ],
 )
+
+cc_library(
+    name = "capture_stream",
+    hdrs = ["capture_stream.h"],
+    deps = [
+        ":stringstream",
+    ],
+)

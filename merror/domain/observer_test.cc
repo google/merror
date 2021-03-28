@@ -20,6 +20,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "merror/domain/base.h"
+#include "merror/domain/internal/capture_stream.h"
 #include "merror/macros.h"
 
 namespace merror {
@@ -59,25 +60,12 @@ struct Return42 : Observer<Base> {
   }
 };
 
-struct CaptureStream {
-  explicit CaptureStream(std::ostream& o) : other(o), sbuf(other.rdbuf()) {
-    other.rdbuf(buffer.rdbuf());
-  }
-  ~CaptureStream() { other.rdbuf(sbuf); }
-  const std::string str() const { return buffer.str(); }
-
- private:
-  std::ostream& other;
-  std::stringstream buffer;
-  std::streambuf* const sbuf;
-};
-
 TEST(Example, Works) {
   static constexpr auto MErrorDomain = PrintRetVal().With(Builder<Return42>());
   auto F = [] { return MERROR(); };
   std::string out;
   {
-    CaptureStream c(std::cerr);
+    internal::CaptureStream c(std::cerr);
     EXPECT_EQ(42, F());
     out = c.str();
   }

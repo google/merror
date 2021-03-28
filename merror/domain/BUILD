@@ -57,6 +57,7 @@ cc_test(
         ":base",
         ":defer",
         "//merror:macros",
+        "//merror/domain/internal:capture_stream",
         "@googletest//:gtest_main",
     ],
 )
@@ -93,6 +94,7 @@ cc_test(
         ":base",
         ":observer",
         "//merror:macros",
+        "//merror/domain/internal:capture_stream",
         "@googletest//:gtest_main",
     ],
 )
@@ -484,6 +486,7 @@ cc_test(
         ":return",
         ":status",
         "//merror:macros",
+        "//merror/domain/internal:capture_stream",
         "@googletest//:gtest_main",
     ],
 )

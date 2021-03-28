@@ -22,6 +22,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "merror/domain/defer.h"
+#include "merror/domain/internal/capture_stream.h"
 #include "merror/macros.h"
 
 namespace merror {
@@ -472,70 +473,46 @@ bool Bar(int n) {
   return true;
 }
 
-struct CaptureStream {
-  explicit CaptureStream(std::ostream& o) : other(o), sbuf(other.rdbuf()) {
-    other.rdbuf(buffer.rdbuf());
-  }
-  ~CaptureStream() { other.rdbuf(sbuf); }
-  const std::string str() const { return buffer.str(); }
-
- private:
-  std::ostream& other;
-  std::stringstream buffer;
-  std::streambuf* const sbuf;
-};
-
-std::vector<std::string_view> Split(std::string_view out) {
-  std::vector<std::string_view> ret;
-  while (!out.empty()) {
-    auto pos = out.find('\n');
-    auto candidate = out.substr(0, pos);
-    if (!candidate.empty()) ret.push_back(candidate);
-    out.remove_prefix(pos + 1);
-  }
-  return ret;
-}
-
 TEST(Example, Functional) {
   std::string out;
   bool b;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     b = Foo(1);
     out = c.str();
   }
   EXPECT_TRUE(b);
   EXPECT_TRUE(out.empty());
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     b = Foo(-1);
     out = c.str();
   }
   EXPECT_FALSE(b);
   EXPECT_TRUE(out.empty());
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     b = Foo(200);
     out = c.str();
   }
   EXPECT_FALSE(b);
   EXPECT_THAT(out, HasSubstr("Error detected"));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     b = Bar(1);
     out = c.str();
   }
   EXPECT_TRUE(b);
   EXPECT_TRUE(out.empty());
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     b = Bar(-1);
     out = c.str();
   }
   EXPECT_FALSE(b);
   EXPECT_THAT(out, HasSubstr("Error detected"));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     b = Bar(200);
     out = c.str();
   }

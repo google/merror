@@ -35,6 +35,7 @@
 #include "merror/domain/base.h"
 #include "merror/domain/bool.h"
 #include "merror/domain/description.h"
+#include "merror/domain/internal/capture_stream.h"
 #include "merror/domain/method_hooks.h"
 #include "merror/domain/print.h"
 #include "merror/domain/print_operands.h"
@@ -67,19 +68,6 @@ constexpr auto MyErrorDomain =
 
 constexpr auto MErrorDomain = MyErrorDomain;
 
-struct CaptureStream {
-  explicit CaptureStream(std::ostream& o) : other(o), sbuf(other.rdbuf()) {
-    other.rdbuf(buffer.rdbuf());
-  }
-  ~CaptureStream() { other.rdbuf(sbuf); }
-  const std::string str() const { return buffer.str(); }
-
- private:
-  std::ostream& other;
-  std::stringstream buffer;
-  std::streambuf* const sbuf;
-};
-
 std::vector<std::string> Split(std::string_view out) {
   std::vector<std::string> ret;
   while (!out.empty()) {
@@ -94,19 +82,19 @@ std::vector<std::string> Split(std::string_view out) {
 TEST(Logging, Format) {
   std::string out;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     MERROR().CoutLog() << "hello";
     out = c.str();
   }
   EXPECT_THAT(out, testing::MatchesRegex(".*logging_test.cc.*hello.*"));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     MERROR().CoutLog();
     out = c.str();
   }
   EXPECT_THAT(out, testing::EndsWith("MERROR()\n"));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     []() {
       constexpr auto MErrorDomain = MyErrorDomain << " \n d1 \n d2 \n ";
       int n = 1;
@@ -137,27 +125,27 @@ TEST(Logging, FirstN) {
   std::string out;
   std::vector<std::string> v;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i) MERROR().CoutLog(FirstN(0)) << i + 1;
     out = c.str();
   }
   EXPECT_THAT(out, "");
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i) MERROR().CoutLog(FirstN(1)) << i + 1;
     out = c.str();
   }
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i) MERROR().CoutLog(FirstN(2)) << i + 1;
     out = c.str();
   }
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("2")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i)
       MERROR().CoutLog(FirstN(std::numeric_limits<int64_t>::max())) << i + 1;
     out = c.str();
@@ -165,20 +153,20 @@ TEST(Logging, FirstN) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("2"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i) MERROR().CoutLog(FirstN(-1)) << i + 1;
     out = c.str();
   }
   EXPECT_THAT(out, "");
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i)
       MERROR().CoutLog(FirstN(std::numeric_limits<int64_t>::min())) << i + 1;
     out = c.str();
   }
   EXPECT_THAT(out, "");
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     uint64_t n[] = {1, 1, 3};
     for (int i = 0; i != 3; ++i) {
       MERROR().CoutLog(FirstN(n[i])) << i + 1;
@@ -188,7 +176,7 @@ TEST(Logging, FirstN) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i) {
       MERROR().CoutLog(FirstN(i)) << i + 1;
     }
@@ -196,7 +184,7 @@ TEST(Logging, FirstN) {
   }
   EXPECT_THAT(out, "");
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i) {
       MERROR().CoutLog(FirstN(i * 2)) << i + 1;
     }
@@ -205,21 +193,21 @@ TEST(Logging, FirstN) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("2"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i) MERROR().CoutLog(FirstN(1)) << i + 1;
     out = c.str();
   }
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i) MERROR().CoutLog(FirstN(1)) << i + 1;
     out = c.str();
   }
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     constexpr auto MErrorDomain = MyErrorDomain.CoutLog(FirstN(1));
     for (int i = 0; i != 3; ++i) MERROR() << i + 1;
     out = c.str();
@@ -232,13 +220,13 @@ TEST(Logging, EveryN) {
   std::string out;
   std::vector<std::string> v;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) MERROR().CoutLog(EveryN(0)) << i + 1;
     out = c.str();
   }
   EXPECT_THAT(out, "");
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) MERROR().CoutLog(EveryN(1)) << i + 1;
     out = c.str();
   }
@@ -246,21 +234,21 @@ TEST(Logging, EveryN) {
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("2"), EndsWith("3"),
                              EndsWith("4")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) MERROR().CoutLog(EveryN(2)) << i + 1;
     out = c.str();
   }
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) MERROR().CoutLog(EveryN(3)) << i + 1;
     out = c.str();
   }
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("4")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) MERROR().CoutLog(EveryN(-1)) << i + 1;
     out = c.str();
   }
@@ -268,14 +256,14 @@ TEST(Logging, EveryN) {
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("2"), EndsWith("3"),
                              EndsWith("4")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) MERROR().CoutLog(EveryN(-2)) << i + 1;
     out = c.str();
   }
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i)
       MERROR().CoutLog(EveryN(std::numeric_limits<int64_t>::max())) << i + 1;
     out = c.str();
@@ -283,7 +271,7 @@ TEST(Logging, EveryN) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i)
       MERROR().CoutLog(EveryN(std::numeric_limits<int64_t>::min())) << i + 1;
     out = c.str();
@@ -291,20 +279,20 @@ TEST(Logging, EveryN) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 2; ++i) MERROR().CoutLog(EveryN(i * 2)) << i + 1;
     out = c.str();
   }
   EXPECT_THAT(out, "");
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 5; ++i) MERROR().CoutLog(EveryN(6 - i)) << i + 1;
     out = c.str();
   }
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("4"), EndsWith("5")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     constexpr auto MErrorDomain = MyErrorDomain.CoutLog(EveryN(2));
     for (int i = 0; i != 4; ++i) MERROR() << i + 1;
     out = c.str();
@@ -317,7 +305,7 @@ TEST(Logging, EveryPow2) {
   std::string out;
   std::vector<std::string> v;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 31; ++i) MERROR().CoutLog(EveryPow2()) << i + 1;
     out = c.str();
   }
@@ -325,7 +313,7 @@ TEST(Logging, EveryPow2) {
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("2"), EndsWith("4"),
                              EndsWith("8"), EndsWith("16")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     constexpr auto MErrorDomain = MyErrorDomain.CoutLog(EveryPow2());
     for (int i = 0; i != 7; ++i) MERROR() << i + 1;
     out = c.str();
@@ -350,7 +338,7 @@ class LogCatcher {
   }
 
  private:
-  CaptureStream c_{std::cout};
+  internal::CaptureStream c_{std::cout};
 };
 
 void TimeFilterQuantTest(const std::function<void(int)>& log) {
@@ -376,7 +364,7 @@ TEST(Logging, Every) {
   std::string out;
   std::vector<std::string> v;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i)
       MERROR().CoutLog(Every(Duration::zero())) << i + 1;
     out = c.str();
@@ -384,7 +372,7 @@ TEST(Logging, Every) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("2"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i) {
       // TODO(iserna): Figure out why max does not work.
       MERROR().CoutLog(Every(Duration{1000000})) << i + 1;
@@ -405,7 +393,7 @@ TEST(Logging, DefaultLogFilter) {
   std::string out;
   std::vector<std::string> v;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i)
       MERROR().DefaultLogFilter(EveryN(2)).CoutLog() << i + 1;
     out = c.str();
@@ -413,7 +401,7 @@ TEST(Logging, DefaultLogFilter) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) {
       MERROR().DefaultLogFilter(FirstN(1)).DefaultLogFilter(EveryN(2)).CoutLog()
           << i + 1;
@@ -423,7 +411,7 @@ TEST(Logging, DefaultLogFilter) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i)
       MERROR().DefaultLogFilter(EveryN(2)).CoutLog(FirstN(2)) << i + 1;
     out = c.str();
@@ -431,7 +419,7 @@ TEST(Logging, DefaultLogFilter) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("2")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) {
       MERROR().DefaultLogFilter(EveryN(2)).CoutLog(FirstN(2)).CoutLog()
           << i + 1;
@@ -441,7 +429,7 @@ TEST(Logging, DefaultLogFilter) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) {
       static constexpr auto MErrorDomain =
           MyErrorDomain.DefaultLogFilter(EveryN(2));
@@ -452,7 +440,7 @@ TEST(Logging, DefaultLogFilter) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) {
       static constexpr auto MErrorDomain =
           MyErrorDomain.DefaultLogFilter(FirstN(2)).DefaultLogFilter(EveryN(2));
@@ -463,7 +451,7 @@ TEST(Logging, DefaultLogFilter) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) {
       static constexpr auto MErrorDomain =
           MyErrorDomain.DefaultLogFilter(FirstN(2));
@@ -474,7 +462,7 @@ TEST(Logging, DefaultLogFilter) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("3")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) {
       static constexpr auto MErrorDomain =
           MyErrorDomain.DefaultLogFilter(FirstN(2));
@@ -490,14 +478,14 @@ TEST(Logging, LoggerOverrides) {
   std::string out;
   std::vector<std::string> v;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) MERROR().CerrLog().CoutLog(EveryN(2)) << i + 1;
     out = c.str();
   }
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("3")));
   {
-    CaptureStream c(std::cerr);
+    internal::CaptureStream c(std::cerr);
     for (int i = 0; i != 4; ++i) MERROR().CoutLog(EveryN(2)).CerrLog() << i + 1;
     out = c.str();
   }
@@ -505,7 +493,7 @@ TEST(Logging, LoggerOverrides) {
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("2"), EndsWith("3"),
                              EndsWith("4")));
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 4; ++i) {
       static constexpr auto MErrorDomain = MyErrorDomain.CerrLog();
       MERROR().CoutLog(EveryN(2)) << i + 1;
@@ -515,7 +503,7 @@ TEST(Logging, LoggerOverrides) {
   v = Split(out);
   EXPECT_THAT(v, ElementsAre(EndsWith("1"), EndsWith("3")));
   {
-    CaptureStream c(std::cerr);
+    internal::CaptureStream c(std::cerr);
     for (int i = 0; i != 4; ++i) {
       static constexpr auto MErrorDomain = MyErrorDomain.CoutLog(EveryN(2));
       MERROR().CerrLog() << i + 1;
@@ -556,7 +544,7 @@ TEST(Logging, DynamicFilterType) {
   std::string out;
   std::vector<std::string> v;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 10; ++i) {
       static constexpr auto MErrorDomain =
           MyErrorDomain.With(Builder<DynamicFilter>());
@@ -581,7 +569,7 @@ TEST(Logging, AlwaysTrueThenFalse) {
   std::string out;
   std::vector<std::string> v;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 2; ++i) {
       MERROR().CoutLog(EveryN(i + 1)) << i + 1;
     }
@@ -598,7 +586,7 @@ TEST(Logging, BecomeAlwaysTrue) {
   std::string out;
   std::vector<std::string> v;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     for (int i = 0; i != 3; ++i) {
       MERROR().CoutLog(EveryN(3 - i)) << i + 1;
     }
@@ -611,7 +599,7 @@ TEST(Logging, BecomeAlwaysTrue) {
 TEST(Logging, MultipleLocations) {
   std::string out;
   {
-    CaptureStream c(std::cout);
+    internal::CaptureStream c(std::cout);
     static constexpr auto MErrorDomain = MyErrorDomain.CoutLog(EveryN(2));
     for (int i = 0; i != 4; ++i) {
       MERROR() << "A" << i + 1;
