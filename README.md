@@ -75,7 +75,7 @@ For example, when `MVERIFY(a == b)` is used in a function returning Status, the 
 
 'Patching' is what allows us to declare code that must run on every error. The ability to add behaviour to the error domain using C++ and the interoperability it provides between different error types is what really sets MError apart from other approaches.
 
-MError macros find the error domain by its special name -- MErrorDomain -- via unqualified name lookup. There is no MErrorDomain in the global scope, so every file that usesMGError macros must explicitly specify its error domain. MError defines merror::Default -- an error domain with all common error-handling features for common users, including Status and logging with optional throttling. All that's needed to take advantage of this functionality is to create a local MErrorDomain alias pointing to merror::Default.
+MError macros find the error domain by its special name -- MErrorDomain -- via unqualified name lookup. There is no MErrorDomain in the global scope, so every file that uses MError macros must explicitly specify its error domain. MError defines merror::Default -- an error domain with all common error-handling features for common users, including Status and logging with optional throttling. All that's needed to take advantage of this functionality is to create a local MErrorDomain alias pointing to merror::Default.
 
 ```
 constexpr auto MErrorDomain = merror::Default();
@@ -84,7 +84,7 @@ constexpr auto MErrorDomain = merror::Default();
 Such a definition can be placed either in namespace scope in a cc file, or in function scope. While it's certainly possible to define an error domain with plain C++ as shown above, the canonical way of doing it utilizes `MERROR_DOMAIN()`.
 
 ```
-constexpr MERROR_DOMAIN(gerror::Default);
+constexpr MERROR_DOMAIN(merror::Default);
 ```
 
 The expansion is exactly the same as the macro-free code snippet above.
@@ -92,17 +92,17 @@ The expansion is exactly the same as the macro-free code snippet above.
 The behavior of an error domain can be customized by calling its methods. Since error domains are immutable, these methods return a modified copy of the original domain. The process of creating a new domain based on an existing domain is called 'patching'.
 
 ```
-constexpr MERROR_DOMAIN(gerror::Default)
+constexpr MERROR_DOMAIN(merror::Default)
     .DefaultErrorCode(absl::StatusCode::kUnkown)
     .CerrLog();
 ```
 
 We've just declared an error domain by patching `merror::Default`. The patch says to send all errors to `std::cerr` and to use `kUnkown` as the error code if no other error code is provided (the default behavior of `merror::Domain` in this case is to issue a compile error).
 
-It's often convenient to define one error domain for a cc file and then use a slightly different domain in one of the functions or even one of the code blocks. This can be achieved by using the second form of `MERROR_DOMAIN()`. While `MERROR_DOMAIN(domain)` uses `domain` as the base, `GERROR_DOMAIN()` without arguments uses the current error domain -- the MErrorDomain object from the closest parent scope.
+It's often convenient to define one error domain for a cc file and then use a slightly different domain in one of the functions or even one of the code blocks. This can be achieved by using the second form of `MERROR_DOMAIN()`. While `MERROR_DOMAIN(domain)` uses `domain` as the base, `MERROR_DOMAIN()` without arguments uses the current error domain -- the MErrorDomain object from the closest parent scope.
 
 ```
-constexpr MERROR_DOMAIN(gerror::Default)
+constexpr MERROR_DOMAIN(merror::Default)
     .DefaultErrorCode(absl::StatusCode::kUnkown)
     .CerrLog();
 
