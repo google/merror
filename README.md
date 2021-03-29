@@ -8,7 +8,7 @@ Before MError, I was adamant to the opinion of avoiding macros for error handlin
 
 MError was conceived by Roman Perepelitsa to tackle the explosion of error handling macros in our codebase. MError provides an alternative that replaces all of macros with 2 control-flow and 2 auxiliary macros. Furthermore, it provides a declarative, scoped mechanism to specify error-handling logic and great interoperability between 'error' types such as bool, std::optional and absl::Status.
 
-I (ivserna) reluctantly started to use MError after I already contributed to its codebase. I am convinced MError or a similar solution will become the default error-handling and status propagation code in C++.
+I reluctantly started to use MError after I already contributed to its codebase. By now, I am convinced MError greatly simplifies error-handling and status propagation code in C++.
 
 # Motivational Example
 
