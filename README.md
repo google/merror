@@ -1,12 +1,11 @@
-MError
-C++ Macro Error Handling Library
+# **MError** C++ Macro Error Handling Library
 
 # Introduction
 MError is a library for error handling in C++ without exceptions. It requires C++17 and only works for gcc or clang compilers.
 
-Before MError, I was adamant to the opinion of avoiding macros for error handling. My TL at the time, would counter indicating that those macros served as a signal in the code to indicate error-handling code as opposed to normal expected flow.
+Before using MError, I was adamant to the opinion of avoiding macros for error handling. My TL at the time, would counter indicating that those macros served as a signal in the code to indicate error-handling code as opposed to normal expected flow.
 
-MError was conceived by Roman Perepelitsa to tackle the explosion of error handling macros in our codebase. MError provides an alternative that replaces all of macros with 2 control-flow and 2 auxiliary macros. Furthermore, it provides a declarative, scoped mechanism to specify error-handling logic and great interoperability between 'error' types such as bool, std::optional and absl::Status.
+MError was conceived by Roman Perepelitsa to tackle the explosion of error handling macros in our codebase. MError provides an alternative that replaces all of macros with 2 control-flow and 2 auxiliary macros. Furthermore, it permits a declarative, scoped mechanism to specify error-handling logic and great interoperability between 'error' types such as bool, std::optional and absl::Status.
 
 I reluctantly started to use MError after I already contributed to its codebase. By now, I am convinced MError greatly simplifies error-handling and status propagation code in C++.
 
